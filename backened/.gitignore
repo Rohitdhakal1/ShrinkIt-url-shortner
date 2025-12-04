@@ -1,0 +1,12 @@
+# Dependencies
+/node_modules
+/coverage
+
+# Environment
+.env                  # !!! CRITICAL: NEVER COMMIT SECRETS !!!
+.env.local
+
+# TypeScript Build Output
+/dist                 # Compiled JS files from TypeScript
+/logs
+/npm-debug.log*
