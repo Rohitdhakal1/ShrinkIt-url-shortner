@@ -22,7 +22,6 @@ import {
   SiTailwindcss,
   SiTypescript,
 } from "react-icons/si";
-import axios from "axios";
 import client from "./helpers/axiosConfig";
 
 interface HistoryItem {
