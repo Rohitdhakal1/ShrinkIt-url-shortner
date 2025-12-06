@@ -1,11 +1,30 @@
 import { useState, useEffect } from "react";
-// Merged Icons: UI, Social (LinkedIn, Resume), Stats, and Utility
-import { FaCopy, FaLink, FaCheck, FaChartLine, FaHistory, FaGithub, FaTrash, FaGlobe, FaServer, FaUserClock, FaLinkedinIn, FaFileAlt } from "react-icons/fa";
-// Tech Stack Icons for Background
-import { SiMongodb, SiExpress, SiReact, SiNodedotjs, SiTailwindcss, SiTypescript } from "react-icons/si";
+import {
+  FaCopy,
+  FaLink,
+  FaCheck,
+  FaChartLine,
+  FaHistory,
+  FaGithub,
+  FaTrash,
+  FaLinkedinIn,
+  FaFileAlt,
+  FaHeart,
+  FaRocket,
+  FaBolt,
+  FaFire,
+} from "react-icons/fa";
+import {
+  SiMongodb,
+  SiExpress,
+  SiReact,
+  SiNodedotjs,
+  SiTailwindcss,
+  SiTypescript,
+} from "react-icons/si";
+import axios from "axios";
 import client from "./helpers/axiosConfig";
 
-// Define the shape of a history item for type safety
 interface HistoryItem {
   shortUrl: string;
   originalUrl: string;
@@ -14,18 +33,15 @@ interface HistoryItem {
 }
 
 function App() {
-  // --- STATE (Application Memory) ---
   const [text, setText] = useState("");
   const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [clicks, setClicks] = useState(0);
-  
-  // History State for Local Storage
   const [history, setHistory] = useState<HistoryItem[]>([]);
 
-  // Load history from LocalStorage on component mount
+  // Load from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("linkHistory");
     if (saved) {
@@ -33,11 +49,8 @@ function App() {
     }
   }, []);
 
-  // Calculate Total Clicks for the Navbar stats bar
   const totalUserClicks = history.reduce((acc, item) => acc + item.clicks, 0);
 
-  // --- ACTIONS (Functions) ---
-  
   const handleCopy = (textToCopy: string) => {
     if (textToCopy) {
       navigator.clipboard.writeText(textToCopy);
@@ -58,240 +71,374 @@ function App() {
     setResult(null);
 
     try {
-      // API Call using the configured client (baseURL: localhost:5001/api)
-      const response = await client.post("api/url/shorten", { longUrl: text });
-      
+      // Real API Call
+      const response = await client.post("/api/url/shorten", { longUrl: text });
+
       const newShortUrl = response.data.shortUrl;
-      const newClicks = response.data.clicks;
+      const newClicks = response.data.clicks || 0;
 
       setResult(newShortUrl);
       setClicks(newClicks);
 
-      // Save to History (LocalStorage)
       const newItem: HistoryItem = {
         shortUrl: newShortUrl,
         originalUrl: text,
         clicks: newClicks,
-        date: new Date().toLocaleDateString()
+        date: new Date().toLocaleDateString(),
       };
 
-      const updatedHistory = [newItem, ...history].slice(0, 5); // Keep last 5 items
+      const updatedHistory = [newItem, ...history].slice(0, 5);
       setHistory(updatedHistory);
       localStorage.setItem("linkHistory", JSON.stringify(updatedHistory));
-
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Server Error. Check Backend Console.");
+      setError(
+        err.response?.data?.message || "Server Error. Check Backend Console."
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // Background Icons Configuration (Fixed positions for floating effect)
+  // ADDED: SiTypescript and SiExpress to the background icons array
   const backgroundIcons = [
-    { icon: <SiMongodb />, color: "text-green-500", pos: "top-32 left-16", delay: "delay-0" },
-    { icon: <SiExpress />, color: "text-gray-500", pos: "top-40 right-32", delay: "delay-1" },
-    { icon: <SiReact />, color: "text-blue-400", pos: "bottom-10 left-32", delay: "delay-2" },
-    { icon: <SiNodedotjs />, color: "text-green-600", pos: "bottom-20 right-16", delay: "delay-3" },
-    { icon: <SiTailwindcss />, color: "text-cyan-400", pos: "top-1/2 left-10", delay: "delay-4" },
-    { icon: <SiTypescript />, color: "text-blue-600", pos: "top-1/2 right-10", delay: "delay-5" },
+    {
+      icon: <SiMongodb />,
+      color: "text-emerald-400/10",
+      pos: "top-20 left-[8%] hidden lg:block",
+      rotate: "rotate-[17deg]",
+      size: "text-8xl",
+    },
+    {
+      icon: <SiReact />,
+      color: "text-cyan-400/10",
+      pos: "bottom-40 left-[15%] hidden lg:block",
+      rotate: "rotate-[52deg]",
+      size: "text-9xl",
+    },
+    {
+      icon: <SiNodedotjs />,
+      color: "text-lime-400/10",
+      pos: "bottom-32 right-[8%] hidden lg:block",
+      rotate: "-rotate-[15deg]",
+      size: "text-7xl",
+    },
+    {
+      icon: <SiTailwindcss />,
+      color: "text-sky-400/10",
+      pos: "top-1/2 left-[5%] hidden lg:block",
+      rotate: "rotate-[8deg]",
+      size: "text-8xl",
+    },
+    {
+        icon: <SiTypescript />,
+        color: "text-blue-400/10",
+        pos: "top-32 right-[15%] hidden lg:block",
+        rotate: "-rotate-[12deg]",
+        size: "text-8xl",
+    },
+    {
+        icon: <SiExpress />,
+        color: "text-gray-500/10",
+        pos: "top-1/3 right-[5%] hidden lg:block",
+        rotate: "rotate-[25deg]",
+        size: "text-7xl",
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-[#0B1120] text-white flex flex-col font-sans relative overflow-x-hidden">
-      
-      {/* --- BACKGROUND LAYER (FIXED) --- */}
+    // Changed min-h-screen to h-screen and added overflow-y-auto to fix double scrollbar
+    <div className="h-screen bg-[#F3E8DF] text-[#452829] flex flex-col font-sans relative overflow-x-hidden overflow-y-auto">
+      {/* More visible now*/}
+      <div className="fixed inset-0 pointer-events-none z-0 opacity-20">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+            repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(69,40,41,0.05) 1px, rgba(69,40,41,0.05) 3px),
+            repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(69,40,41,0.05) 1px, rgba(69,40,41,0.05) 3px)
+          `,
+          }}
+        ></div>
+        <div
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, rgba(69,40,41,0.1) 1px, transparent 1px)",
+            backgroundSize: "20px 20px",
+          }}
+        ></div>
+      </div>
+
+      {/* Background icons - more tilted  */}
       <div className="fixed inset-0 pointer-events-none z-0">
         {backgroundIcons.map((item, index) => (
           <div
             key={index}
-            className={`absolute ${item.pos} ${item.color} opacity-20 text-6xl animate-float ${item.delay}`}
+            className={`absolute ${item.pos} ${item.color} ${item.rotate} ${item.size}`}
           >
             {item.icon}
           </div>
         ))}
       </div>
 
-      {/* --- FOREGROUND LAYER --- */}
-      
-      {/* 1. NAVBAR (Sticky) */}
-      <nav className="w-full p-6 flex justify-between items-center border-b border-gray-800 bg-[#0B1120]/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-lg flex items-center justify-center font-bold text-lg">
+      {/* Navbar -getting better */}
+      <nav
+        className="w-full p-5 flex justify-between items-center border-b-[3px] border-[#452829] bg-[#F3E8DF]/95 backdrop-blur sticky top-0 z-50"
+        style={{ transform: "rotate(-0.3deg)" }}
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 bg-[#452829] rounded-sm flex items-center justify-center font-bold text-2xl text-[#E8D1C5] border-[3px] border-[#452829] shadow-[4px_4px_0px_0px_#452829]"
+            style={{ transform: "rotate(3deg)" }}
+          >
             S
           </div>
-          <span className="font-bold text-xl tracking-tight">Shrink<span className="text-blue-500">It</span></span>
+          <span className="font-black text-xl tracking-tight text-[#452829]">
+            Shrink<span className="text-[#57595B]">It</span>
+          </span>
         </div>
-        
-        {/* --- SOCIAL/PROFESSIONAL LINKS --- */}
-        <div className="flex items-center gap-4">
-          
-          {/* LinkedIn */}
-          <a 
-            href="https://www.linkedin.com/in/rohitdhakal" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="text-gray-400 hover:text-blue-400 transition"
+
+        <div className="flex items-center gap-6">
+          <a
+            href="https://www.linkedin.com/in/rohitdhakal"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#57595B] hover:text-[#452829] transition-colors duration-200 hover:scale-110 transform"
           >
             <FaLinkedinIn size={24} />
           </a>
-          
-          {/* GitHub */}
-          <a 
-            href="https://github.com/Rohitdhakal1" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="text-gray-400 hover:text-white transition"
+
+          <a
+            href="https://github.com/Rohitdhakal1"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#57595B] hover:text-[#452829] transition-colors duration-200 hover:scale-110 transform"
           >
             <FaGithub size={24} />
           </a>
-          
-          {/* Resume/File (FORCED DOWNLOAD) */}
-          <a 
-            href="/resume.pdf" 
-            download="Rohit_Dhakal_Resume.pdf" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="text-gray-400 hover:text-green-400 transition"
+
+          <a
+            href="/resume.pdf"
+            download="Rohit_Dhakal_Resume.pdf"
+            className="text-[#57595B] hover:text-[#452829] transition-colors duration-200 hover:scale-110 transform"
           >
             <FaFileAlt size={24} />
           </a>
         </div>
       </nav>
 
-      {/* 2. MAIN CONTENT (Scrollable) */}
-      <main className="flex-1 flex flex-col items-center justify-start pt-12 px-4 pb-4 gap-8 w-full max-w-4xl mx-auto z-10 relative bg-[#0B1120]">
-        
-        {/* HERO SECTION */}
-        <div className="w-full max-w-lg text-center">
-            <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
-              Shorten Your <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
-                Looooong Links
+      {/* Main content */}
+      <main className="flex-1 flex flex-col items-center justify-start pt-10 px-4 pb-8 gap-12 w-full max-w-3xl mx-auto z-10 relative">
+        {/* Hero */}
+        <div className="w-full text-center space-y-5">
+          <h1
+            className="text-4xl md:text-5xl font-black leading-tight text-[#452829]"
+            style={{ letterSpacing: "-0.03em" }}
+          >
+            Simple, fast, and
+            <br />
+            <span className="text-[#5b5757]">Free</span>
+          </h1>
+
+          {/* Stats - Normal size boxes with better text */}
+          <div className="grid grid-cols-3 gap-4 max-w-xl mx-auto pt-3">
+            <div
+              className="bg-[#E8D1C5] p-2 rounded-md border-[2px] border-[#452829] shadow-[4px_4px_0px_0px_#452829]"
+              style={{ transform: "rotate(-1deg)" }}
+            >
+              <FaRocket className="text-[#452829] mb-1 mx-auto text-2xl" />
+              <span className="block text-[#452829] font-black text-2xl">
+                10K+
               </span>
-            </h1>
-            <p className="text-gray-400 mb-8 text-lg">
-              Streamline your links with our professional URL shortener.
-            </p>
-
-            {/* --- SOCIAL PROOF STATS BAR (Example Data) --- */}
-            <div className="grid grid-cols-3 gap-2 mb-8">
-              <div className="bg-gray-800/50 border border-gray-700 p-3 rounded-xl flex flex-col items-center">
-                <FaGlobe className="text-blue-500 mb-1" />
-                <span className="text-white font-bold text-lg">10K+</span>
-                <span className="text-xs text-gray-500">Links</span>
-              </div>
-              <div className="bg-gray-800/50 border border-gray-700 p-3 rounded-xl flex flex-col items-center">
-                <FaServer className="text-green-500 mb-1" />
-                <span className="text-white font-bold text-lg">99.9%</span>
-                <span className="text-xs text-gray-500">Uptime</span>
-              </div>
-              <div className="bg-gray-800/50 border border-gray-700 p-3 rounded-xl flex flex-col items-center">
-                <FaUserClock className="text-purple-500 mb-1" />
-                <span className="text-white font-bold text-lg">{totalUserClicks}</span>
-                <span className="text-xs text-gray-500">Your Clicks</span>
-              </div>
+              <span className="text-sm text-[#57595B] font-bold">Links</span>
             </div>
+            <div
+              className="bg-[#E8D1C5] p-2 rounded-md border-[2px] border-[#452829] shadow-[4px_4px_0px_0px_#452829]"
+              style={{ transform: "rotate(-2deg)" }}
+            >
+              <FaBolt className="text-[#452829] mb-1 mx-auto text-2xl" />
+              <span className="block text-[#452829] font-black text-2xl">
+                99.9%
+              </span>
+              <span className="text-sm text-[#57595B] font-bold">Uptime</span>
+            </div>
+            <div
+              className="bg-[#E8D1C5] p-2 rounded-md border-[2px] border-[#452829] shadow-[4px_4px_0px_0px_#452829]"
+              style={{ transform: "rotate(3deg)" }}
+            >
+              <FaFire className="text-[#452829] mb-1 mx-auto text-2xl" />
+              <span className="block text-[#452829] font-black text-2xl">
+                {totalUserClicks}
+              </span>
+              <span className="text-sm text-[#57595B] font-bold">Clicks</span>
+            </div>
+          </div>
 
-            {/* --- INPUT CARD --- */}
-            <div className="bg-gray-800 p-2 rounded-2xl border border-blue-500/30 shadow-2xl shadow-blue-900/20 ring-1 ring-blue-500/20 flex flex-col sm:flex-row gap-2">
-              <input 
-                type="text" 
-                placeholder="Paste link here..." 
-                className="bg-transparent text-white px-4 py-3 flex-1 outline-none placeholder-gray-500 font-medium"
+          {/* Input - better custom things acc to mine */}
+          <div className="bg-[#E8D1C5] p-2 rounded-lg border-[2px] border-[#452829] shadow-[6px_6px_0px_0px_#452829] max-w-2xl mx-auto">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="text"
+                placeholder="Paste your long URL here..."
+                className="bg-white text-[#452829] px-5 py-2 flex-1 outline-none placeholder-[#57595B] rounded-md border-[2px] border-[#57595B] focus:border-[#452829] transition-colors font-medium text-base"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
+                onKeyPress={(e) => e.key === "Enter" && handleSubmit()}
               />
-              <button 
+              <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 whitespace-nowrap shadow-lg shadow-blue-600/30"
+                className="bg-[#452829] hover:bg-[#57595B] text-[#E8D1C5] px-7 py-2 rounded-md font-black transition-all duration-200 flex items-center justify-center gap-2 border-[3px] border-[#452829] shadow-[4px_4px_0px_0px_#452829] hover:shadow-none hover:translate-x-1 hover:translate-y-1 disabled:opacity-50 text-base"
               >
-                {loading ? "..." : <>Shorten <FaLink /></>}
+                {loading ? (
+                  "..."
+                ) : (
+                  <>
+                    <FaLink /> Shorten It
+                  </>
+                )}
               </button>
             </div>
+          </div>
 
-            {error && <p className="text-red-400 mt-4 bg-red-900/20 p-2 rounded-lg border border-red-500/20">{error}</p>}
+          {error && (
+            <p className="text-[#452829] bg-[#E8D1C5] p-4 rounded-lg border-[3px] border-[#452829] max-w-xl mx-auto font-bold text-base shadow-[4px_4px_0px_0px_#452829]">
+              {error}
+            </p>
+          )}
 
-            {/* RESULT CARD */}
-            {result && (
-              <div className="mt-6 bg-gray-800/90 backdrop-blur-sm border border-green-500/30 p-4 rounded-xl animate-fade-in space-y-3 shadow-xl text-left">
-                <div className="flex items-center justify-between pb-2 border-b border-gray-700">
-                  <div className="flex items-center gap-2">
-                    <FaChartLine className="text-blue-400 text-sm" />
-                    <span className="text-xs text-gray-400 font-medium">Clicks on this link</span>
-                  </div>
-                  <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                    {clicks}
+          {/* Result */}
+          {result && (
+            <div className="mt-6 bg-[#E8D1C5] border-[3px] border-[#452829] p-1 rounded-lg max-w-1xl mx-auto space-y-1 shadow-[6px_6px_0px_0px_#452829]">
+              <div className="flex items-center justify-between pb-2 border-b-[3px] border-[#57595B]">
+                <div className="flex items-center gap-2">
+                  <FaChartLine className="text-[#452829] text-xl" />
+                  <span className="text-base text-[#452829] font-black">
+                    Total Clicks
                   </span>
                 </div>
-                
-                <div className="flex items-center justify-between gap-4">
-                  <a href={result} target="_blank" rel="noreferrer" className="truncate text-green-400 font-bold hover:underline text-lg">
-                    {result}
-                  </a>
-                  <button onClick={() => handleCopy(result)} className="text-gray-400 hover:text-white p-2 hover:bg-gray-700 rounded-lg transition">
-                    {copied ? <FaCheck className="text-green-500" /> : <FaCopy />}
-                  </button>
-                </div>
+                <span className="bg-[#452829] text-[#E8D1C5] text-base font-black px-4 py-2 rounded-md border-[2px] border-[#452829]">
+                  {clicks}
+                </span>
               </div>
-            )}
+
+              <div className="flex items-center justify-between gap-4">
+                <a
+                  href={result}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="truncate text-[#57595B] font-bold hover:underline text-lg flex-1"
+                >
+                  {result}
+                </a>
+                <button
+                  onClick={() => handleCopy(result)}
+                  className="text-[#452829] hover:text-[#E8D1C5] p-3 hover:bg-[#452829] rounded-md transition-colors border-[3px] border-[#452829] shadow-[3px_3px_0px_0px_#452829]"
+                >
+                  {copied ? (
+                    <FaCheck className="text-[#57595B] text-lg" />
+                  ) : (
+                    <FaCopy className="text-lg" />
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* HISTORY SECTION */}
-        <div className="w-full">
-          <div className="flex justify-between items-end mb-4 border-b border-gray-800 pb-2">
-            <h3 className="text-xl font-bold flex items-center gap-2 text-gray-200">
-              <FaHistory className="text-gray-500" /> Recent History
+        <div className="w-full max-w-2xl">
+          <div className="flex justify-between items-center mb-6 pb-4 border-b-[3px] border-[#452829]">
+            <h3
+              className="text-2xl font-black flex items-center gap-3 text-[#452829]"
+              style={{ transform: "rotate(-1deg)" }}
+            >
+              <FaHistory className="text-[#57595B] text-xl" /> Recent Links
             </h3>
             {history.length > 0 && (
-              <button onClick={clearHistory} className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1">
-                <FaTrash /> Clear
+              <button
+                onClick={clearHistory}
+                className="text-sm text-[#452829] hover:text-[#E8D1C5] flex items-center gap-2 transition-colors font-bold border-[2px] border-[#452829] px-3 py-2 rounded-md hover:bg-[#452829]"
+              >
+                <FaTrash className="text-xs" /> Clear All
               </button>
             )}
           </div>
 
           {history.length === 0 ? (
-            <div className="text-center py-12 border-2 border-dashed border-gray-800 rounded-2xl text-gray-600 bg-gray-900/50">
-              <p>No history yet.</p>
+            <div className="text-center py-13 border-[3px] border-dashed border-[#452829] rounded-lg text-[#57595B] bg-[#E8D1C5]/60 shadow-[5px_5px_0px_0px_rgba(69,40,41,0.3)]">
+              <p className="text-lg font-bold">
+                No links yet. Start shortening!
+              </p>
             </div>
           ) : (
-            <div className="grid gap-3">
+            <div className="space-y-4">
               {history.map((item, idx) => (
-                <div key={idx} className="bg-gray-800/80 backdrop-blur-sm p-4 rounded-xl border border-gray-700/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-gray-500 transition group overflow-hidden hover:shadow-lg">
-                  <div className="flex-1 min-w-0 pr-4">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="bg-blue-500/10 text-blue-400 text-xs px-2 py-0.5 rounded border border-blue-500/20">Short</span>
-                      <a href={item.shortUrl} target="_blank" rel="noreferrer" className="text-blue-400 font-medium truncate hover:underline block">
-                        {item.shortUrl}
-                      </a>
+                <div
+                  key={idx}
+                  className="bg-[#E8D1C5] p-4 rounded-lg border-[2px] border-[#452829] shadow-[5px_5px_0px_0px_#452829] hover:shadow-[7px_7px_0px_0px_#452829] hover:-translate-y-1 transition-all duration-200"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="bg-[#452829] text-[#E8D1C5] text-xs px-3 py-1 rounded-md border-[1px] border-[#452829] font-black">
+                          SHORT
+                        </span>
+                        <a
+                          href={item.shortUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[#57595B] font-bold truncate hover:underline text-base"
+                        >
+                          {item.shortUrl}
+                        </a>
+                      </div>
+                      <p
+                        className="text-[#57595B] text-sm truncate font-semibold"
+                        title={item.originalUrl}
+                      >
+                        {item.originalUrl}
+                      </p>
                     </div>
-                    <p className="text-gray-500 text-xs truncate w-full" title={item.originalUrl}>
-                      {item.originalUrl}
-                    </p>
-                  </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto mt-2 sm:mt-0 pt-2 sm:pt-0 border-t sm:border-0 border-gray-700">
-                    <div className="text-right">
-                      <span className="block text-gray-200 font-bold">{item.clicks} <span className="text-xs text-gray-500 font-normal">clicks</span></span>
-                      <span className="text-xs text-gray-600">{item.date}</span>
+                    <div className="flex items-center justify-between sm:justify-end gap-5">
+                      <div className="text-right">
+                        <span className="block text-[#452829] font-black text-xl">
+                          {item.clicks}{" "}
+                          <span className="text-sm text-[#57595B] font-bold">
+                            clicks
+                          </span>
+                        </span>
+                        <span className="text-xs text-[#57595B] font-bold">
+                          {item.date}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleCopy(item.shortUrl)}
+                        className="p-3 bg-white rounded-md text-[#452829] hover:bg-[#452829] hover:text-[#E8D1C5] transition-colors border-[3px] border-[#452829] shadow-[3px_3px_0px_0px_rgba(69,40,41,0.3)]"
+                      >
+                        <FaCopy className="text-base" />
+                      </button>
                     </div>
-                    <button 
-                      onClick={() => handleCopy(item.shortUrl)}
-                      className="p-2 bg-gray-700 rounded-lg text-gray-400 hover:bg-gray-600 hover:text-white transition"
-                      title="Copy"
-                    >
-                      <FaCopy />
-                    </button>
                   </div>
                 </div>
               ))}
             </div>
           )}
         </div>
-
       </main>
+
+      <footer
+        className="w-full py-6 border-t-[4px] border-[#452829] bg-[#E8D1C5] text-[#452829] mt-16"
+        style={{ transform: "rotate(-0.5deg)" }}
+      >
+        <div className="max-w-3xl mx-auto px-4 text-center">
+          <p className="text-base flex items-center justify-center gap-2 font-bold">
+            Made with <FaHeart className="text-[#57595B] text-lg" /> by{" "}
+            <span className="font-black text-lg">ROHIT</span>
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
