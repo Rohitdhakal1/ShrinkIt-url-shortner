@@ -1,18 +1,16 @@
 import dotenv from "dotenv";
 import ConnectDB from "./config/db";
 
-// 1. Load environment variables FIRST.
+//Load environment variables FIRST otherwise redis give error to find env file.
 dotenv.config(); 
 
-// 2. Wrap startup logic in an async function
+// 2.it helps to stop redis so that ev load first then redis
 async function startApplication() {
-    
-    // Dynamically import application files that rely on process.env 
-    // This code ONLY executes AFTER dotenv.config() above.
+
     const { default: redisClient } = await import("./config/redis");
     const { default: app } = await import("./app"); 
 
-    // Now, all configurations are loaded and clients are connected.
+    // Now, all configurations are loaded and clients are connected yehh haha.
     
     const PORT = process.env.Port || 5001;
     ConnectDB(); 
@@ -23,5 +21,5 @@ async function startApplication() {
     });
 }
 
-// Execute the server startup
+// Execute the server startup most important i already forget to do this many time
 startApplication();
