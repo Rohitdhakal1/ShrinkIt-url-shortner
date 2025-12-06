@@ -9,7 +9,7 @@ export const shortenUrl = async(req:Request,res:Response)=>{
     let {longUrl} = req.body;
 
     longUrl = longUrl.trim();
-    // If it doesn't have http OR https, we assume they meant https
+    // fi bug iif user direct url without https we added ourself 
     if (!/^https?:\/\//i.test(longUrl)) {
         longUrl = 'https://' + longUrl;
     }
@@ -48,7 +48,9 @@ export const redirectUrl = async (req: Request, res: Response) => {
             return res.status(400).json('Invalid code');
         }
 
-        // --- STEP 1: CHECK CACHE (The Pocket) ---
+        
+        // if code present and why not just fetch the shorturl fromm redis and drop it on client 
+        // it helps and make the url faster to redirect 
         // Redis client returns strings or null/undefined
         const cachedLongUrl = await redisClient.get(code);
         if (cachedLongUrl) {
@@ -63,7 +65,7 @@ export const redirectUrl = async (req: Request, res: Response) => {
             url.clicks++;
             await url.save();
 
-            const TTL = 3600; // Time To Live: 1 hour (3600 seconds)
+            const TTL = 3600; // Time To Live: 1 hour (3600 seconds) // it just need how we want 
             await redisClient.set(code, url.longUrl, 'EX', TTL);
 
             return res.redirect(url.longUrl);
