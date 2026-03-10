@@ -35,11 +35,12 @@ The application flow handles shortening and redirecting:
 
 ## Getting Started
 
-### Prerequisites
-- Node.js (v18 or higher)
-- Redis instance (running locally or via Docker)
-- MongoDB instance (Atlas cluster or local)
+### Requirements
 
+Before running the project, make sure you have:
+1) Node.js (v18 or higher)
+2) MongoDB (local installation or MongoDB Atlas)
+3) Redis (run locally with Docker or use Upstash Redis online)
 ### Local Development Setup
 
 1. **Clone the repository**
