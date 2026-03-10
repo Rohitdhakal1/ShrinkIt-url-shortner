@@ -3,6 +3,7 @@ import type {Application, Request, Response } from "express";
 import cors from "cors";
 import urlRouter from './routes/url';
 import indexroute from './routes/index';
+import { errorHandler } from "./middlewares/errorHandler";
 
 const app:Application = express();
 
@@ -16,5 +17,6 @@ app.get("/", (req: Request, res: Response) => {
   res.send('hello mr')
 });
 
+app.use(errorHandler);
 
 export default app;

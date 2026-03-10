@@ -1,63 +1,84 @@
-# 🚀 ShrinkIt | High-Performance URL Shortener
+# ShrinkIt URL Shortener
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)
-![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)
-![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=nodedotjs&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
+ShrinkIt is a full-stack URL shortening service built with React and Node.js. It takes long URLs and generates unique, shortened links that redirect users to their original destinations.
 
-**ShrinkIt** is a production-ready, full-stack URL shortening service engineered for **scale** and **performance**. Unlike basic CRUD apps, ShrinkIt implements advanced system design patterns like **Cache-Aside** to ensure sub-millisecond redirection latencies.
+The project implements a cache-aside pattern using Redis to reduce database strain and improve latency for frequently accessed redirects.
 
-👉 **[Live Demo](https://shortenit-frontend-jwxs.vercel.app/)**
+## How it Works
 
----
+The application flow handles shortening and redirecting:
 
-## ⚡ Key Features
+**Shortening a URL:**
+1. The user submits a long URL via the React frontend.
+2. The Node.js API hits MongoDB to check if the URL already exists.
+3. If not, a unique short code is generated and saved to MongoDB.
 
-- **🚀 Ultra-Fast Redirection:** Implements **Redis Caching (Cache-Aside Pattern)** to bypass the database for frequently accessed links, reducing read latency from ~150ms to <10ms.
-- **📊 Real-Time Analytics:** Tracks click counts instantly using atomic database increments.
-- **🐳 Containerized Architecture:** Development environment fully containerized using **Docker** for consistent dependency management (Redis/Node).
-- **🛡️ Type Safety:** Built with **TypeScript** across the entire stack (Frontend & Backend) for robust, error-free code.
-- **🎨 Modern UI:** A responsive, Glassmorphism-inspired interface built with **React** and **Tailwind CSS**.
-- **🔒 Security:** Implements rigorous input validation (`valid-url`) and CORS policies.
+**Redirecting a User:**
+1. A user visits the shortened link.
+2. The Node.js API checks Redis for the cached destination URL.
+3. If found (Cache Hit), the user is redirected immediately.
+4. If not found (Cache Miss), the API queries MongoDB, caches the result in Redis with a Time-To-Live (TTL), and redirects the user.
 
----
+## Technology Stack
 
-## 🏗️ System Architecture
-
-**The Data Flow:**
-
-1.  **Write (Shorten):** User -> React -> API -> MongoDB (Persist) -> Redis (Cache) -> User.
-2.  **Read (Redirect):** User -> API -> **Redis (Hit?)** -> Redirect.
-    - _If Miss:_ -> MongoDB -> Save to Redis -> Redirect.
-
----
-
-## 🛠️ Tech Stack
-
-- **Frontend:** React (Vite), Tailwind CSS, Axios, React Icons
+- **Frontend:** React, Vite, Tailwind CSS, Axios
 - **Backend:** Node.js, Express.js
-- **Database:** MongoDB Atlas (Persistent Storage)
-- **Caching:** Redis (Upstash for Prod / Docker for Dev)
-- **DevOps:** Docker, Railway (Backend), Vercel (Frontend)
+- **Database:** MongoDB (Persistent storage for links and click analytics)
+- **Cache:** Redis (In-memory caching for faster redirects)
+- **Language:** TypeScript used across both frontend and backend
 
----
-
-## 🚀 Getting Started (Run Locally)
+## Getting Started
 
 ### Prerequisites
+- Node.js (v18 or higher)
+- Redis instance (running locally or via Docker)
+- MongoDB instance (Atlas cluster or local)
 
-- Node.js (v18+)
-- Docker Desktop (for local Redis)
-- MongoDB URI
+### Local Development Setup
 
-### 1. Clone the Repository
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Rohitdhakal1/ShrinkIt-url-shortner.git
+   cd ShrinkIt-url-shortner
+   ```
 
-```bash
-git clone [https://github.com/Rohitdhakal1/ShrinkIt-url-shortner.git](https://github.com/Rohitdhakal1/ShrinkIt-url-shortner.git)
-cd ShrinkIt
-```
+2. **Configure Environment Variables**
+   Create a `.env` file in the `backend` directory with the following variables:
+   ```env
+   PORT_URI=5001
+   BASE_URL=http://localhost:5001
+   MONGODB_URI=your_mongodb_connection_string
+   REDIS_URL=your_redis_connection_string
+   ```
 
-👨‍💻 Author
+3. **Install Dependencies**
+   Run the following commands in their respective directories:
+   ```bash
+   # Install backend dependencies
+   cd backend
+   npm install
+
+   # Install frontend dependencies
+   cd ../client
+   npm install
+   ```
+
+4. **Run the Application**
+   Start both the backend and frontend development servers.
+
+   Terminal 1 (Backend):
+   ```bash
+   cd backend
+   npm run dev
+   ```
+
+   Terminal 2 (Frontend):
+   ```bash
+   cd client
+   npm run dev
+   ```
+
+The frontend will be available at `http://localhost:5173` (or the port Vite outputs), and the backend API will run on `http://localhost:5001`.
+
+## Author
 Rohit Dhakal
