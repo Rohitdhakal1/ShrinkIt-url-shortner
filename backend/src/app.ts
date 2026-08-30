@@ -1,6 +1,7 @@
 import express from "express";
 import type {Application, Request, Response } from "express";
 import cors from "cors";
+import helmet from "helmet";
 import urlRouter from './routes/url';
 import indexroute from './routes/index';
 import { errorHandler } from "./middlewares/errorHandler";
@@ -8,6 +9,7 @@ import { errorHandler } from "./middlewares/errorHandler";
 const app:Application = express();
 
 app.use(express.json());
+app.use(helmet());
 app.use(cors());
 
 app.use('/api/url',urlRouter);

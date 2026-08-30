@@ -1,9 +1,9 @@
 # Dependencies
 node_modules/
-npm-debug.log
-yarn-error.log
-yarn.lock
-package-lock.json
+
+# Package manager logs
+npm-debug.log*
+yarn-error.log*
 
 # Environment variables
 .env
@@ -15,6 +15,7 @@ package-lock.json
 # Build outputs
 backend/dist/
 client/dist/
+dist/
 build/
 *.tsbuildinfo
 
@@ -27,7 +28,7 @@ build/
 *.sln
 *.sw?
 
-# OS generated files(extra files default )
+# OS generated files
 .DS_Store
 .DS_Store?
 ._*
@@ -36,8 +37,10 @@ build/
 ehthumbs.db
 Thumbs.db
 
-# Misc(extra one again created )
+# Testing / Coverage
 coverage/
 .nyc_output/
+
+# Logs
 logs/
 *.log
